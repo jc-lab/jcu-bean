@@ -16,6 +16,8 @@
 
 #include "bean-object-context-base.h"
 
+#include "../bean-initializer.h"
+
 namespace jcu {
     namespace bean {
         namespace intl {
@@ -28,29 +30,51 @@ namespace jcu {
             public:
                 virtual ~BeanObjectContextImpl() {}
 
-                BeanObjectContextImpl(T *existingObject) : ptr_(existingObject) {
+				explicit BeanObjectContextImpl(T *existingObject) : ptr_(existingObject) {
                     class_name_ = typeid(T).name();
                 }
 
-                BeanObjectContextImpl(std::shared_ptr<T> existingObject) : object_(existingObject) {
+                explicit BeanObjectContextImpl(std::shared_ptr<T> existingObject) : object_(existingObject) {
                     class_name_ = typeid(T).name();
                     ptr_ = object_.get();
                 }
 
                 void *getPtr() override { return ptr_; };
 
-                void callPostConstruct() override {
+				template<int avail>
+				void callPostConstructChecked();
+
+				template<>
+				void callPostConstructChecked<false>() {}
+
+				template<>
+				void callPostConstructChecked<true>() {
                     BeanInitializer *bean_initializer = dynamic_cast<BeanInitializer*>(object_.get());
                     if(bean_initializer) {
                         bean_initializer->jcbPostConstruct();
                     }
                 }
 
-                void callPreDestroy() override {
+				template<int avail>
+				void callPreDestroyChecked();
+
+				template<>
+				void callPreDestroyChecked<false>() {}
+
+				template<>
+				void callPreDestroyChecked<true>() {
                     BeanInitializer *bean_initializer = dynamic_cast<BeanInitializer*>(object_.get());
                     if(bean_initializer) {
                         bean_initializer->jcbPreDestroy();
                     }
+				}
+
+                void callPostConstruct() override {
+					callPostConstructChecked< std::is_base_of<BeanInitializer, T>::value>();
+                }
+
+                void callPreDestroy() override {
+					callPreDestroyChecked< std::is_base_of<BeanInitializer, T>::value>();
                 }
             };
         }

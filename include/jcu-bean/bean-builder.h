@@ -10,6 +10,7 @@
 #ifndef __JCU_BEAN_BEAN_BUILDER_H__
 #define __JCU_BEAN_BEAN_BUILDER_H__
 
+#include <string>
 #include <memory>
 
 #include "intl/bean-object-context-impl.h"
@@ -33,14 +34,14 @@ namespace jcu {
             template<class T>
             static BeanBuilder prepare(std::shared_ptr<T> existingBean)
             {
-                std::shared_ptr<intl::BeanObjectContextBase> bean_ctx = new BeanObjectContextImpl<T>(existingBean);
+                std::shared_ptr<intl::BeanObjectContextBase> bean_ctx(new intl::BeanObjectContextImpl<T>(existingBean));
                 return BeanBuilder(bean_ctx);
             }
 
             template<class T>
             static BeanBuilder prepare(T* existingBean)
             {
-                std::shared_ptr<intl::BeanObjectContextBase> bean_ctx = new BeanObjectContextImpl<T>(existingBean);
+                std::shared_ptr<intl::BeanObjectContextBase> bean_ctx(new intl::BeanObjectContextImpl<T>(existingBean));
                 return BeanBuilder(bean_ctx);
             }
 
