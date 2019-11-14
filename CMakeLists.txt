@@ -1,5 +1,15 @@
 cmake_minimum_required (VERSION 2.8)
-project(jcu-bean CXX)
+
+set(PROJECT_VERSION 1.0.0)
+
+if (POLICY CMP0048)
+	cmake_policy(SET CMP0048 NEW)
+	project(jcu-bean VERSION ${PROJECT_VERSION} LANGUAGES CXX)
+else()
+	project(jcu-bean CXX)
+endif (POLICY CMP0048)
+
+option(WITH_EXAMPLE "Build example." OFF)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -21,3 +31,7 @@ add_library(${PROJECT_NAME} ${SRC_FILES})
 target_include_directories(${PROJECT_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)
+
+if(WITH_EXAMPLE)
+	add_subdirectory(example)
+endif()
