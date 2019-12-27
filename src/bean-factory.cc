@@ -116,14 +116,16 @@ namespace jcu {
                 for (auto iter_bean = beans_.begin(); iter_bean != beans_.end(); iter_bean++)
                 {
                     intl::BeanObjectContextBase *bean_ctx = iter_bean->second.get();
-                    void *clsPtr = (char*)bean_ctx->getPtr();
-                    std::list<intl::AutowiringObjectContext> &autowirings = bean_ctx->getAutowirings();
-                    for (auto iter_aw = autowirings.begin(); iter_aw != autowirings.end(); iter_aw++)
-                    {
-                        *((void**)((char*)clsPtr + iter_aw->getVarOffset())) = (iter_aw->getBeanCtx()->getPtr());
+                    if (bean_ctx->getInited() < 2) {
+                        void* clsPtr = (char*)bean_ctx->getPtr();
+                        std::list<intl::AutowiringObjectContext>& autowirings = bean_ctx->getAutowirings();
+                        for (auto iter_aw = autowirings.begin(); iter_aw != autowirings.end(); iter_aw++)
+                        {
+                            *((void**)((char*)clsPtr + iter_aw->getVarOffset())) = (iter_aw->getBeanCtx()->getPtr());
+                        }
+                        bean_ctx->callPostConstruct();
+                        bean_ctx->setInited(2);
                     }
-                    bean_ctx->callPostConstruct();
-                    bean_ctx->setInited(2);
                 }
             }
 
